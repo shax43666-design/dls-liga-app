@@ -79,6 +79,68 @@
   #status{
     text-align:center;color:var(--muted);font-size:12px;padding:6px 20px 0;
   }
+  .back{
+    display:inline-flex;align-items:center;gap:4px;
+    color:var(--cyan);font-weight:700;font-size:15px;
+    background:none;border:none;padding:4px 0;margin-bottom:14px;
+  }
+  .league-banner{
+    border-radius:18px;padding:1.5px;margin-bottom:16px;
+    background:linear-gradient(135deg,#ff5f6d,var(--cyan) 50%,#00ffa3);
+  }
+  .league-banner-inner{
+    border-radius:16.5px;padding:22px 18px;
+    background:linear-gradient(160deg,#182338,#0c1426);
+    position:relative;overflow:hidden;
+  }
+  .league-banner .badge-full{
+    position:absolute;top:14px;left:16px;
+    border:1px solid #ff5f6d;color:#ff5f6d;
+    font-size:11px;font-weight:700;letter-spacing:1px;
+    padding:3px 10px;border-radius:20px;
+  }
+  .league-banner h2{font-size:30px;letter-spacing:1px;margin:34px 0 18px;}
+  .stat-row{display:flex;gap:10px;}
+  .stat-box{
+    flex:1;background:rgba(0,217,255,.06);border:1px solid rgba(0,217,255,.15);
+    border-radius:12px;padding:12px 6px;text-align:center;
+  }
+  .stat-box b{display:block;font-size:22px;color:var(--cyan);}
+  .stat-box span{font-size:10px;color:var(--muted);letter-spacing:.5px;}
+  .register-btn{
+    display:block;width:100%;margin-top:16px;padding:14px;border:none;border-radius:12px;
+    background:linear-gradient(90deg,#6a5cff,var(--cyan));
+    color:#001522;font-weight:800;font-size:15px;
+  }
+  .register-btn:disabled{background:#2a3346;color:var(--muted);}
+  .league-row{
+    display:flex;align-items:center;gap:12px;
+    background:var(--card);border:1px solid rgba(255,255,255,.06);
+    border-radius:14px;padding:14px;margin-bottom:10px;
+  }
+  .league-logo{
+    width:38px;height:38px;border-radius:50%;background:#1c2740;
+    display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+  }
+  .league-row-info{flex:1;}
+  .league-row-info b{font-size:15px;display:block;}
+  .league-row-info small{color:var(--muted);font-size:12px;}
+  .pill{
+    font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.5px;
+  }
+  .pill.full{border:1px solid #ff5f6d;color:#ff5f6d;}
+  .pill.open{border:1px solid #00ffa3;color:#00ffa3;}
+  .section-title{
+    font-size:12px;letter-spacing:2px;color:var(--muted);margin:18px 0 10px;
+  }
+  .club-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .club-cell{
+    background:var(--card);border:1px solid rgba(255,255,255,.06);
+    border-radius:14px;padding:20px 8px;text-align:center;
+  }
+  .club-cell.taken{opacity:.35;}
+  .club-cell .em{font-size:26px;display:block;margin-bottom:8px;}
+  .club-cell b{font-size:13px;}
 </style>
 </head>
 <body>
@@ -88,39 +150,104 @@
   <h1>DLS <span>LIGA</span></h1>
 </header>
 
-<main>
-  <div class="title">REJIMNI TANLANG</div>
-  <div class="grid">
-    <a class="card" href="#" data-section="ligalar">
-      <div class="card-inner"><small>⚽</small><span>Ligalar</span></div>
-    </a>
-    <a class="card" href="#" data-section="worldcup">
-      <div class="card-inner"><small>🏆</small><span>Jahon Chempionati</span></div>
-    </a>
-    <a class="card" href="#" data-section="ucl">
-      <div class="card-inner"><small>⭐</small><span>Champions League</span></div>
-    </a>
-    <a class="card" href="#" data-section="division">
-      <div class="card-inner"><small>🏟️</small><span>Divizion</span></div>
-    </a>
-  </div>
-  <div id="status"></div>
-</main>
+<main id="app"></main>
 
 <script>
   const tg = window.Telegram ? window.Telegram.WebApp : null;
   if (tg) { tg.ready(); tg.expand(); }
+  function haptic(){ if (tg) tg.HapticFeedback.impactOccurred('light'); }
 
-  document.querySelectorAll('.card').forEach(el => {
-    el.addEventListener('click', (e) => {
-      e.preventDefault();
-      const section = el.dataset.section;
-      // Hozircha bo'sh — har bir bo'lim keyingi bosqichda to'ldiriladi.
-      document.getElementById('status').textContent =
-        '"' + el.querySelector('span').textContent + '" bo\'limi tez orada qo\'shiladi.';
-      if (tg) tg.HapticFeedback.impactOccurred('light');
+  // --- Vaqtinchalik namunaviy ma'lumot (keyinroq bot/bazaga ulanadi) ---
+  const LEAGUES = [
+    { id:'laliga', name:'LaLiga', emoji:'🔴', current:20, max:20, season:5 },
+    { id:'epl', name:'Premier Liga', emoji:'⚪', current:20, max:20, season:5 },
+    { id:'bundesliga', name:'Bundesliga', emoji:'⚫', current:18, max:18, season:5 },
+    { id:'ligue1', name:'Ligue 1', emoji:'🔵', current:14, max:18, season:5 },
+  ];
+  const CLUBS = ['Angers','Auxerre','Brest','Le Havre','Lens','Lille','Lorient','Lyon','Marseille','Metz','Monaco','Nantes','Nice','Paris FC','Paris SG','Rennes','Strasbourg','Toulouse'];
+
+  const app = document.getElementById('app');
+
+  function renderHome(){
+    app.innerHTML = `
+      <div class="title">REJIMNI TANLANG</div>
+      <div class="grid">
+        <a class="card" href="#" data-section="ligalar"><div class="card-inner"><small>⚽</small><span>Ligalar</span></div></a>
+        <a class="card" href="#" data-section="worldcup"><div class="card-inner"><small>🏆</small><span>Jahon Chempionati</span></div></a>
+        <a class="card" href="#" data-section="ucl"><div class="card-inner"><small>⭐</small><span>Champions League</span></div></a>
+        <a class="card" href="#" data-section="division"><div class="card-inner"><small>🏟️</small><span>Divizion</span></div></a>
+      </div>
+      <div id="status"></div>`;
+    app.querySelectorAll('.card').forEach(el => {
+      el.addEventListener('click', e => {
+        e.preventDefault();
+        haptic();
+        if (el.dataset.section === 'ligalar') renderLeagueList();
+        else document.getElementById('status').textContent =
+          '"' + el.querySelector('span').textContent + '" bo\'limi tez orada qo\'shiladi.';
+      });
     });
-  });
+  }
+
+  function renderLeagueList(){
+    app.innerHTML = `
+      <button class="back" id="btnBack">‹ Ortga</button>
+      <div class="section-title">LIGA TANLASH</div>
+      <div id="leagueRows"></div>`;
+    document.getElementById('btnBack').onclick = () => { haptic(); renderHome(); };
+    const rows = document.getElementById('leagueRows');
+    LEAGUES.forEach(l => {
+      const full = l.current >= l.max;
+      const row = document.createElement('div');
+      row.className = 'league-row';
+      row.innerHTML = `
+        <div class="league-logo">${l.emoji}</div>
+        <div class="league-row-info"><b>${l.name}</b><small>${l.current}/${l.max} O'yinchilar</small></div>
+        <span class="pill ${full ? 'full' : 'open'}">${full ? "TO'LIQ" : 'OCHIQ'}</span>`;
+      row.onclick = () => { haptic(); renderLeagueDetail(l); };
+      rows.appendChild(row);
+    });
+  }
+
+  function renderLeagueDetail(l){
+    const full = l.current >= l.max;
+    app.innerHTML = `
+      <button class="back" id="btnBack">‹ Ortga</button>
+      <div class="league-banner"><div class="league-banner-inner">
+        ${full ? '<span class="badge-full">TO\'LIQ</span>' : ''}
+        <h2>${l.name}</h2>
+        <div class="stat-row">
+          <div class="stat-box"><b>${l.current}</b><span>O'YINCHILAR</span></div>
+          <div class="stat-box"><b>${l.max}</b><span>MAKSIMAL</span></div>
+          <div class="stat-box"><b>${l.season}</b><span>MAVSUM</span></div>
+        </div>
+        <button class="register-btn" id="btnRegister" ${full ? 'disabled' : ''}>Ro'yxatdan o'tish</button>
+      </div></div>
+      <div class="section-title">LIGADAGI KLUBLAR</div>
+      <div class="club-grid" id="clubGrid"></div>`;
+    document.getElementById('btnBack').onclick = () => { haptic(); renderLeagueList(); };
+    const grid = document.getElementById('clubGrid');
+    CLUBS.forEach((name, i) => {
+      const taken = i < l.current;
+      const cell = document.createElement('div');
+      cell.className = 'club-cell' + (taken ? ' taken' : '');
+      cell.innerHTML = `<span class="em">⚽</span><b>${name}</b>`;
+      grid.appendChild(cell);
+    });
+    const btn = document.getElementById('btnRegister');
+    if (btn && !full) {
+      btn.onclick = () => {
+        haptic();
+        document.getElementById('status')?.remove();
+        const note = document.createElement('div');
+        note.id = 'status';
+        note.textContent = "Ro'yxatdan o'tish jarayoni keyingi bosqichda ulanadi.";
+        app.appendChild(note);
+      };
+    }
+  }
+
+  renderHome();
 </script>
 
 </body>
