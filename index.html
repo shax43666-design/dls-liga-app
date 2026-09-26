@@ -172,6 +172,36 @@
     padding:16px;margin-top:18px;font-size:13px;line-height:1.9;color:var(--muted);
   }
   .rules-box b{color:var(--text);}
+  .div-badge{
+    width:84px;height:84px;border-radius:50%;margin:6px auto 14px;
+    background:conic-gradient(var(--cyan),#6a5cff,#00ffa3,var(--cyan));
+    display:flex;align-items:center;justify-content:center;
+  }
+  .div-badge span{
+    width:74px;height:74px;border-radius:50%;background:#0c1426;
+    display:flex;align-items:center;justify-content:center;
+    font-size:30px;font-weight:800;
+  }
+  .div-sub{text-align:center;color:var(--muted);font-size:12px;letter-spacing:1px;margin-bottom:14px;}
+  .threshold-box{
+    background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:14px;
+    padding:14px;margin-top:14px;font-size:13px;line-height:2;
+  }
+  .threshold-box .up{color:#00ffa3;font-weight:700;}
+  .threshold-box .stay{color:var(--gold);font-weight:700;}
+  .threshold-box .down{color:#ff5f6d;font-weight:700;}
+  .reg-box{
+    background:linear-gradient(160deg,#182338,#0c1426);border:1px solid rgba(0,217,255,.2);
+    border-radius:16px;padding:16px;margin-top:16px;
+  }
+  .reg-box h3{font-size:16px;margin-bottom:6px;}
+  .reg-box p{color:var(--muted);font-size:12px;line-height:1.6;margin-bottom:12px;}
+  .participant-row{
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--card);border:1px solid rgba(255,255,255,.06);
+    border-radius:12px;padding:10px 14px;margin-bottom:8px;font-size:13px;
+  }
+  .participant-row .uname{color:var(--muted);font-size:11px;}
 </style>
 </head>
 <body>
@@ -217,6 +247,20 @@
     return COUNTRIES.slice(idx*4, idx*4+4);
   }
 
+  // Divizion: 10 (eng past) dan 1 (eng yuqori) gacha. Har bosqich 4 o'yin, kuniga 2 tagacha.
+  function divisionRules(d){
+    if (d === 1)  return { promote: 6,  stayMin: null, stayMax: null, dropMax: 5, promoteLabel: "Ligalarga yo'llanma" };
+    if (d === 2)  return { promote: 10, stayMin: 6, stayMax: 9, dropMax: 5 };
+    if (d <= 4)   return { promote: 9,  stayMin: 6, stayMax: 8, dropMax: 5 };
+    if (d <= 6)   return { promote: 8,  stayMin: 5, stayMax: 7, dropMax: 4 };
+    return          { promote: 6,  stayMin: 3, stayMax: 5, dropMax: 2 };
+  }
+  const ME = { division: 8, played: 3, maxMatches: 4, points: 7 };
+  const PARTICIPANTS = [
+    ['Akhmadovich','@thecoko'], ['Abdurashid','@abdurashid_s7'], ['Shaxbozbek','@shox_pesserr'],
+    ['Xurshidbek','@xakjaan_04'], ["Gnanzou Franck",'@Franck_24'],
+  ];
+
   const app = document.getElementById('app');
 
   function renderHome(){
@@ -235,6 +279,7 @@
         haptic();
         if (el.dataset.section === 'ligalar') renderLeagueList();
         else if (el.dataset.section === 'worldcup') renderWorldCup('A');
+        else if (el.dataset.section === 'division') renderDivision();
         else document.getElementById('status').textContent =
           '"' + el.querySelector('span').textContent + '" bo\'limi tez orada qo\'shiladi.';
       });
@@ -341,6 +386,41 @@
       cell.className = 'flag-cell';
       cell.innerHTML = `<span class="flag">${flag}</span><b>${name}</b>`;
       fg.appendChild(cell);
+    });
+  }
+
+  function renderDivision(){
+    const r = divisionRules(ME.division);
+    const stayLine = r.stayMin === null
+      ? ''
+      : `<div><span class="stay">${r.stayMin}-${r.stayMax} ochko</span> — divizionda qolasiz</div>`;
+    app.innerHTML = `
+      <button class="back" id="btnBack">‹ Ortga</button>
+      <div class="div-badge"><span>${ME.division}</span></div>
+      <div class="div-sub">JORIY DIVIZION</div>
+      <div class="stat-row">
+        <div class="stat-box"><b>${ME.played}/${ME.maxMatches}</b><span>O'YINLAR</span></div>
+        <div class="stat-box"><b>${ME.points}</b><span>OCHKO</span></div>
+        <div class="stat-box"><b>+3 / +1 / 0</b><span>G'.-D.-M.</span></div>
+      </div>
+      <div class="threshold-box">
+        <div><span class="up">${r.promote}+ ochko</span> — ${r.promoteLabel || 'divizion ko\'tariladi'}</div>
+        ${stayLine}
+        <div><span class="down">0-${r.dropMax} ochko</span> — 1 divizion pastga tushadi</div>
+      </div>
+      <div class="reg-box">
+        <h3>📝 Ro'yxat ochiq (17:00–20:00)</h3>
+        <p>Hozirgi vaqtda qur'a 20:00 dan keyin o'tkaziladi, o'yin natijasi ertasi kuni 16:00 gacha kiritiladi. Kuniga 2 tagacha o'yin bo'lishi mumkin.</p>
+      </div>
+      <div class="section-title">BUGUNGI ISHTIROKCHILAR</div>
+      <div id="participantList"></div>`;
+    document.getElementById('btnBack').onclick = () => { haptic(); renderHome(); };
+    const list = document.getElementById('participantList');
+    PARTICIPANTS.forEach(([name, uname], i) => {
+      const row = document.createElement('div');
+      row.className = 'participant-row';
+      row.innerHTML = `<b>${i+1}. ${name}</b><span class="uname">${uname}</span>`;
+      list.appendChild(row);
     });
   }
 
