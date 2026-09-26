@@ -141,6 +141,37 @@
   .club-cell.taken{opacity:.35;}
   .club-cell .em{font-size:26px;display:block;margin-bottom:8px;}
   .club-cell b{font-size:13px;}
+  .wc-banner{
+    border-radius:18px;overflow:hidden;margin-bottom:14px;
+    background:linear-gradient(160deg,#182338,#0c1426);
+    border:1px solid rgba(255,184,0,.25);padding:22px 18px;position:relative;
+  }
+  .wc-banner .em-big{font-size:44px;display:block;text-align:center;margin-bottom:10px;}
+  .wc-status{color:var(--cyan);font-size:12px;letter-spacing:1px;font-weight:700;}
+  .wc-banner h2{font-size:26px;margin:8px 0 16px;}
+  .note-box{
+    margin-top:14px;background:rgba(255,184,0,.08);border:1px solid rgba(255,184,0,.25);
+    border-radius:12px;padding:12px;text-align:center;color:var(--gold);font-weight:700;font-size:13px;
+  }
+  .note-text{color:var(--muted);font-size:12px;line-height:1.5;margin-top:10px;text-align:center;}
+  .group-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .group-cell{
+    background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:10px;
+    padding:12px 0;text-align:center;font-weight:800;color:var(--muted);
+  }
+  .group-cell.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,217,255,.08);}
+  .flag-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .flag-cell{
+    display:flex;align-items:center;gap:10px;
+    background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:14px;
+  }
+  .flag-cell .flag{font-size:22px;}
+  .flag-cell b{font-size:14px;}
+  .rules-box{
+    background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;
+    padding:16px;margin-top:18px;font-size:13px;line-height:1.9;color:var(--muted);
+  }
+  .rules-box b{color:var(--text);}
 </style>
 </head>
 <body>
@@ -157,7 +188,7 @@
   if (tg) { tg.ready(); tg.expand(); }
   function haptic(){ if (tg) tg.HapticFeedback.impactOccurred('light'); }
 
-  // --- Vaqtinchalik namunaviy ma'lumot (keyinroq bot/bazaga ulanadi) ---
+  // --- Vaqtinchalik namunaviy ma'lumot (keyinroq admin panel/bazaga ulanadi) ---
   const LEAGUES = [
     { id:'laliga', name:'LaLiga', emoji:'🔴', current:20, max:20, season:5 },
     { id:'epl', name:'Premier Liga', emoji:'⚪', current:20, max:20, season:5 },
@@ -165,6 +196,26 @@
     { id:'ligue1', name:'Ligue 1', emoji:'🔵', current:14, max:18, season:5 },
   ];
   const CLUBS = ['Angers','Auxerre','Brest','Le Havre','Lens','Lille','Lorient','Lyon','Marseille','Metz','Monaco','Nantes','Nice','Paris FC','Paris SG','Rennes','Strasbourg','Toulouse'];
+
+  const COUNTRIES = [
+    ['Mexico','🇲🇽'],['South Africa','🇿🇦'],['South Korea','🇰🇷'],['Czech Republic','🇨🇿'],
+    ['Brazil','🇧🇷'],['Argentina','🇦🇷'],['France','🇫🇷'],['Germany','🇩🇪'],
+    ['Spain','🇪🇸'],['Italy','🇮🇹'],['England','🏴'],['Portugal','🇵🇹'],
+    ['Netherlands','🇳🇱'],['Belgium','🇧🇪'],['Croatia','🇭🇷'],['Uruguay','🇺🇾'],
+    ['Japan','🇯🇵'],['USA','🇺🇸'],['Canada','🇨🇦'],['Morocco','🇲🇦'],
+    ['Senegal','🇸🇳'],['Ghana','🇬🇭'],['Nigeria','🇳🇬'],['Egypt','🇪🇬'],
+    ['Poland','🇵🇱'],['Switzerland','🇨🇭'],['Denmark','🇩🇰'],['Sweden','🇸🇪'],
+    ['Serbia','🇷🇸'],['Australia','🇦🇺'],['Iran','🇮🇷'],['Saudi Arabia','🇸🇦'],
+    ['Qatar','🇶🇦'],['Ecuador','🇪🇨'],['Chile','🇨🇱'],['Colombia','🇨🇴'],
+    ['Peru','🇵🇪'],['Costa Rica','🇨🇷'],['Tunisia','🇹🇳'],['Cameroon','🇨🇲'],
+    ['Ukraine','🇺🇦'],['Turkey','🇹🇷'],['Austria','🇦🇹'],['Norway','🇳🇴'],
+    ['Uzbekistan','🇺🇿'],['Jordan','🇯🇴'],['Wales','🏴'],['Scotland','🏴'],
+  ];
+  const GROUP_LETTERS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+  function groupCountries(letter){
+    const idx = GROUP_LETTERS.indexOf(letter);
+    return COUNTRIES.slice(idx*4, idx*4+4);
+  }
 
   const app = document.getElementById('app');
 
@@ -183,6 +234,7 @@
         e.preventDefault();
         haptic();
         if (el.dataset.section === 'ligalar') renderLeagueList();
+        else if (el.dataset.section === 'worldcup') renderWorldCup('A');
         else document.getElementById('status').textContent =
           '"' + el.querySelector('span').textContent + '" bo\'limi tez orada qo\'shiladi.';
       });
@@ -245,6 +297,51 @@
         app.appendChild(note);
       };
     }
+  }
+
+  function renderWorldCup(activeLetter){
+    app.innerHTML = `
+      <button class="back" id="btnBack">‹ Ortga</button>
+      <div class="wc-banner">
+        <span class="em-big">🏆</span>
+        <div class="wc-status">OCHIQ — RO'YXAT DAVOM ETMOQDA</div>
+        <h2>${activeLetter} GURUH</h2>
+        <div class="stat-row">
+          <div class="stat-box"><b>4</b><span>JAMOALAR</span></div>
+          <div class="stat-box"><b>4</b><span>MAKSIMAL</span></div>
+          <div class="stat-box"><b>8</b><span>MAVSUM</span></div>
+        </div>
+        <div class="note-box">Divizion mavsumi hali yakunlanmagan</div>
+        <div class="note-text">JCh'ga faqat Divizion reytingida top-48 ga kirganlar o'ta oladi. Ro'yxat Divizion mavsumi yakunlanganda shakllanadi.</div>
+      </div>
+      <div class="section-title">GURUH TANLASH</div>
+      <div class="group-grid" id="groupGrid"></div>
+      <div class="section-title">GURUHDAGI JAMOALAR</div>
+      <div class="flag-grid" id="flagGrid"></div>
+      <div class="rules-box">
+        <b>Qoidalar</b><br>
+        ▸ O'yin <b>8 daqiqa</b> davom etadi.<br>
+        ▸ Ikkitalik himoya yoqish <b>mumkin emas</b>.<br>
+        ▸ O'yinchilar holati <b>"Excellent"</b> bo'lishi kerak.<br>
+        ▸ Extra time va penalti <b>yo'q</b>.<br>
+        ▸ Dedline har kuni tungi soat <b>23:30</b> da.
+      </div>`;
+    document.getElementById('btnBack').onclick = () => { haptic(); renderHome(); };
+    const gg = document.getElementById('groupGrid');
+    GROUP_LETTERS.forEach(letter => {
+      const cell = document.createElement('div');
+      cell.className = 'group-cell' + (letter === activeLetter ? ' active' : '');
+      cell.textContent = letter;
+      cell.onclick = () => { haptic(); renderWorldCup(letter); };
+      gg.appendChild(cell);
+    });
+    const fg = document.getElementById('flagGrid');
+    groupCountries(activeLetter).forEach(([name, flag]) => {
+      const cell = document.createElement('div');
+      cell.className = 'flag-cell';
+      cell.innerHTML = `<span class="flag">${flag}</span><b>${name}</b>`;
+      fg.appendChild(cell);
+    });
   }
 
   renderHome();
