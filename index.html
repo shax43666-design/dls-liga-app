@@ -202,6 +202,32 @@
     border-radius:12px;padding:10px 14px;margin-bottom:8px;font-size:13px;
   }
   .participant-row .uname{color:var(--muted);font-size:11px;}
+  .cl-banner{
+    border-radius:18px;padding:22px 18px;margin-bottom:16px;
+    background:linear-gradient(160deg,#1a1650,#0c1426);
+    border:1px solid rgba(106,92,255,.35);
+  }
+  .cl-tag{color:#a78bfa;font-size:12px;letter-spacing:2px;font-weight:700;}
+  .cl-banner h2{font-size:26px;margin:8px 0 16px;}
+  .status-btn{
+    display:block;width:100%;margin-top:14px;padding:14px;border:none;border-radius:12px;
+    background:linear-gradient(90deg,#6a5cff,var(--cyan));color:#001522;font-weight:800;font-size:14px;
+  }
+  .qualifier-row{
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--card);border:1px solid rgba(255,255,255,.06);
+    border-radius:12px;padding:12px 14px;margin-bottom:8px;font-size:13px;
+  }
+  .qualifier-row b{font-size:14px;}
+  .qualifier-row small{color:var(--muted);display:block;font-size:11px;margin-top:2px;}
+  .cl-points{color:var(--cyan);font-weight:800;font-size:15px;}
+  .note-block{
+    background:rgba(255,184,0,.07);border:1px solid rgba(255,184,0,.25);
+    border-radius:14px;padding:14px;margin-top:18px;font-size:12.5px;line-height:1.9;color:var(--muted);
+  }
+  .note-block b{color:var(--gold);}
+  .rules-list{margin-top:12px;font-size:12.5px;line-height:1.9;color:var(--muted);}
+  .rules-list b{color:var(--text);}
 </style>
 </head>
 <body>
@@ -260,6 +286,11 @@
     ['Akhmadovich','@thecoko'], ['Abdurashid','@abdurashid_s7'], ['Shaxbozbek','@shox_pesserr'],
     ['Xurshidbek','@xakjaan_04'], ["Gnanzou Franck",'@Franck_24'],
   ];
+  const QUALIFIERS = [
+    ['Xusanov Kamoliddin','LaLiga',1,105], ['23','LaLiga',2,105], ['"ISA"','LaLiga',3,90],
+    ['Shaxbozbek','Premier Liga',1,98], ['Abdurashid','Premier Liga',2,92],
+    ['Akhmadovich','Bundesliga',1,89], ['Xurshidbek','Bundesliga',2,81], ['n','Ligue 1',1,74],
+  ];
 
   const app = document.getElementById('app');
 
@@ -280,6 +311,7 @@
         if (el.dataset.section === 'ligalar') renderLeagueList();
         else if (el.dataset.section === 'worldcup') renderWorldCup('A');
         else if (el.dataset.section === 'division') renderDivision();
+        else if (el.dataset.section === 'ucl') renderChampionsLeague();
         else document.getElementById('status').textContent =
           '"' + el.querySelector('span').textContent + '" bo\'limi tez orada qo\'shiladi.';
       });
@@ -420,6 +452,47 @@
       const row = document.createElement('div');
       row.className = 'participant-row';
       row.innerHTML = `<b>${i+1}. ${name}</b><span class="uname">${uname}</span>`;
+      list.appendChild(row);
+    });
+  }
+
+  function renderChampionsLeague(){
+    app.innerHTML = `
+      <button class="back" id="btnBack">‹ Ortga</button>
+      <div class="cl-banner">
+        <div class="cl-tag">⭐ CHEMPIONLAR LIGASI</div>
+        <h2>Qur'a kutilmoqda</h2>
+        <div class="stat-row">
+          <div class="stat-box"><b>36</b><span>KVALIFIKANT</span></div>
+          <div class="stat-box"><b>36</b><span>KLUBLAR</span></div>
+          <div class="stat-box"><b>8</b><span>TURLAR</span></div>
+        </div>
+        <button class="status-btn" disabled>Siz ishtirokchi emassiz</button>
+      </div>
+      <div class="section-title">KVALIFIKANTLAR (36/36)</div>
+      <div id="qualifierList"></div>
+      <div class="note-block">
+        <b>MUHIM — ESDA TUTING</b><br>
+        › Deadline — <b>23:30</b> (Toshkent). Shu vaqtda joriy tur yopiladi va keyingisi ochiladi.<br>
+        › Deadlinegacha natija kiritilmagan o'yin <b>0:0 durang</b> bilan yopiladi.<br>
+        › Natijani faqat <b>ochiq turda</b> kiritish mumkin.
+      </div>
+      <div class="rules-list">
+        <b>UMUMIY QOIDALAR</b><br>
+        › Liga mavsumi bo'yicha eng ko'p ochko to'plagan <b>36 ta</b> ishtirokchi qatnashadi.<br>
+        › Guruhlar <b>yo'q</b> — barcha ishtirokchi yagona liga bosqichida.<br>
+        › Har ishtirokchi <b>8 ta turli raqib</b> bilan <b>1 martadan</b> o'ynaydi.<br>
+        › Kuniga <b>bitta tur</b> o'ynaladi.<br>
+        › Ochko: g'alaba <b>3</b> · durang <b>1</b> · mag'lubiyat <b>0</b>.<br>
+        › Saralash: ochko → gol farqi → urilgan gollar.<br>
+        › 8 tur tugagach: <b>top-8</b> to'g'ridan setkaga, <b>9-24 o'rin</b> pley-in o'ynab 8 tasi setkaga qo'shiladi.
+      </div>`;
+    document.getElementById('btnBack').onclick = () => { haptic(); renderHome(); };
+    const list = document.getElementById('qualifierList');
+    QUALIFIERS.forEach(([name, league, pos, pts]) => {
+      const row = document.createElement('div');
+      row.className = 'qualifier-row';
+      row.innerHTML = `<div><b>${name}</b><small>${league} · ${pos}-o'rin</small></div><span class="cl-points">${pts}</span>`;
       list.appendChild(row);
     });
   }
