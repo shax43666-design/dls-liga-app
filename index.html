@@ -286,6 +286,10 @@
     ['Akhmadovich','@thecoko'], ['Abdurashid','@abdurashid_s7'], ['Shaxbozbek','@shox_pesserr'],
     ['Xurshidbek','@xakjaan_04'], ["Gnanzou Franck",'@Franck_24'],
   ];
+  const API_BASE = 'https://dls-liga-telegram-bot--shaxa0609.replit.app';
+  function currentTelegramId(){
+    return tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null;
+  }
   const QUALIFIERS = [
     ['Xusanov Kamoliddin','LaLiga',1,105], ['23','LaLiga',2,105], ['"ISA"','LaLiga',3,90],
     ['Shaxbozbek','Premier Liga',1,98], ['Abdurashid','Premier Liga',2,92],
@@ -422,17 +426,32 @@
   }
 
   function renderDivision(){
-    const r = divisionRules(ME.division);
+    app.innerHTML = `<button class="back" id="btnBack">‹ Ortga</button><div id="divContent" style="text-align:center;color:var(--muted);padding:30px 0;">Yuklanmoqda...</div>`;
+    document.getElementById('btnBack').onclick = () => { haptic(); renderHome(); };
+    const uid = currentTelegramId();
+    if (!uid) {
+      document.getElementById('divContent').textContent = "Foydalanuvchi aniqlanmadi — Telegram ichida oching.";
+      return;
+    }
+    fetch(`${API_BASE}/api/division/${uid}`)
+      .then(res => res.json())
+      .then(data => paintDivision(data))
+      .catch(() => {
+        document.getElementById('divContent').textContent = "Ma'lumotni yuklab bo'lmadi. Birozdan so'ng qayta urinib ko'ring.";
+      });
+  }
+
+  function paintDivision(d){
+    const r = divisionRules(d.division);
     const stayLine = r.stayMin === null
       ? ''
       : `<div><span class="stay">${r.stayMin}-${r.stayMax} ochko</span> — divizionda qolasiz</div>`;
-    app.innerHTML = `
-      <button class="back" id="btnBack">‹ Ortga</button>
-      <div class="div-badge"><span>${ME.division}</span></div>
+    document.getElementById('divContent').outerHTML = `
+      <div class="div-badge"><span>${d.division}</span></div>
       <div class="div-sub">JORIY DIVIZION</div>
       <div class="stat-row">
-        <div class="stat-box"><b>${ME.played}/${ME.maxMatches}</b><span>O'YINLAR</span></div>
-        <div class="stat-box"><b>${ME.points}</b><span>OCHKO</span></div>
+        <div class="stat-box"><b>${d.matches_played_cycle}/4</b><span>O'YINLAR</span></div>
+        <div class="stat-box"><b>${d.points_cycle}</b><span>OCHKO</span></div>
         <div class="stat-box"><b>+3 / +1 / 0</b><span>G'.-D.-M.</span></div>
       </div>
       <div class="threshold-box">
@@ -442,18 +461,26 @@
       </div>
       <div class="reg-box">
         <h3>📝 Ro'yxat ochiq (17:00–20:00)</h3>
-        <p>Hozirgi vaqtda qur'a 20:00 dan keyin o'tkaziladi, o'yin natijasi ertasi kuni 16:00 gacha kiritiladi. Kuniga 2 tagacha o'yin bo'lishi mumkin.</p>
+        <p>Qur'a 20:00 dan keyin o'tkaziladi, o'yin natijasi ertasi kuni 16:00 gacha kiritiladi.</p>
+        <button class="register-btn" id="btnDivRegister" ${d.registered_today ? 'disabled' : ''}>
+          ${d.registered_today ? "✅ Bugun ro'yxatdasiz" : "Ro'yxatdan o'tish"}
+        </button>
       </div>
-      <div class="section-title">BUGUNGI ISHTIROKCHILAR</div>
-      <div id="participantList"></div>`;
-    document.getElementById('btnBack').onclick = () => { haptic(); renderHome(); };
-    const list = document.getElementById('participantList');
-    PARTICIPANTS.forEach(([name, uname], i) => {
-      const row = document.createElement('div');
-      row.className = 'participant-row';
-      row.innerHTML = `<b>${i+1}. ${name}</b><span class="uname">${uname}</span>`;
-      list.appendChild(row);
-    });
+      <div id="divStatus" style="text-align:center;color:var(--muted);font-size:12px;margin-top:8px;"></div>`;
+    const btn = document.getElementById('btnDivRegister');
+    if (btn && !d.registered_today) {
+      btn.onclick = () => {
+        haptic();
+        const uid = currentTelegramId();
+        fetch(`${API_BASE}/api/division/register/${uid}`, { method: 'POST' })
+          .then(res => res.json())
+          .then(res => {
+            document.getElementById('divStatus').textContent = res.message || (res.success ? "Ro'yxatdan muvaffaqiyatli o'tdingiz." : "Xatolik yuz berdi.");
+            if (res.success) renderDivision();
+          })
+          .catch(() => { document.getElementById('divStatus').textContent = "Xatolik yuz berdi, qayta urinib ko'ring."; });
+      };
+    }
   }
 
   function renderChampionsLeague(){
