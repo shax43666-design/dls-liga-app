@@ -279,6 +279,58 @@
     background:#ff5f6d;color:#fff;font-size:9px;font-weight:800;letter-spacing:1px;
     padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle;
   }
+  .profile-header{
+    display:flex;align-items:center;gap:14px;
+    background:var(--card);border:1px solid rgba(255,255,255,.06);
+    border-radius:16px;padding:16px;margin-bottom:16px;
+  }
+  .profile-avatar{
+    width:56px;height:56px;border-radius:50%;flex-shrink:0;
+    background:linear-gradient(135deg,#6a5cff,var(--cyan));
+    display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#001522;
+  }
+  .profile-info{flex:1;min-width:0;}
+  .profile-info b{font-size:16px;display:block;}
+  .profile-info span{color:var(--muted);font-size:12px;}
+  .profile-ball{
+    background:rgba(0,217,255,.1);border:1px solid rgba(0,217,255,.25);
+    border-radius:12px;padding:8px 12px;text-align:center;flex-shrink:0;
+  }
+  .profile-ball b{display:block;font-size:16px;color:var(--cyan);}
+  .profile-ball span{font-size:9px;color:var(--muted);}
+  .stat-grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+  .match-card{
+    background:linear-gradient(160deg,#182338,#0c1426);border:1px solid rgba(0,217,255,.2);
+    border-radius:16px;padding:18px;margin-bottom:16px;
+  }
+  .match-card .vs{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .match-card .vs b{font-size:15px;}
+  .match-card .vs span{color:var(--muted);font-size:11px;}
+  .score-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;}
+  .score-row input{
+    width:56px;text-align:center;font-size:20px;font-weight:800;color:var(--text);
+    background:#0c1426;border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 0;
+  }
+  .score-row span{color:var(--muted);font-size:18px;}
+  .submit-btn{
+    display:block;width:100%;padding:12px;border:none;border-radius:12px;
+    background:linear-gradient(90deg,#00ffa3,var(--cyan));color:#001522;font-weight:800;font-size:14px;margin-bottom:10px;
+  }
+  .dispute-btn{
+    display:block;width:100%;padding:12px;border:1px solid rgba(255,95,109,.4);border-radius:12px;
+    background:rgba(255,95,109,.1);color:#ff8a93;font-weight:700;font-size:13px;
+  }
+  .history-row{
+    background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:12px;
+    padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;font-size:12.5px;
+  }
+  .history-row .h-id{color:var(--muted);flex-shrink:0;}
+  .history-row .h-opp{color:var(--cyan);flex:1;}
+  .history-row .h-score{font-weight:800;font-size:14px;}
+  .history-badge{font-size:9px;font-weight:800;padding:3px 8px;border-radius:20px;flex-shrink:0;}
+  .history-badge.ok{background:rgba(0,255,163,.12);color:#00ffa3;}
+  .history-badge.pending{background:rgba(255,184,0,.12);color:var(--gold);}
+  .history-badge.dispute{background:rgba(255,95,109,.12);color:#ff8a93;}
   .sub-tabs{display:flex;gap:10px;margin-bottom:16px;}
   .sub-tab{
     flex:1;padding:12px 8px;border-radius:22px;border:1px solid rgba(255,255,255,.1);
@@ -731,6 +783,107 @@
   function showBottomNav(){ document.getElementById('bottomNav').style.display = 'flex'; }
   function hideBottomNav(){ document.getElementById('bottomNav').style.display = 'none'; }
 
+  function renderProfile(){
+    showBottomNav();
+    setActiveNav('profile');
+    app.innerHTML = `<div style="text-align:center;color:var(--muted);padding:30px 0;">Yuklanmoqda...</div>`;
+    const uid = currentTelegramId();
+    if (!uid) { app.innerHTML = "<div class='placeholder'>Foydalanuvchi aniqlanmadi — Telegram ichida oching.</div>"; return; }
+    fetch(`${API_BASE}/api/profile/${uid}`)
+      .then(res => res.json())
+      .then(p => paintProfile(p))
+      .catch(() => { app.innerHTML = "<div class='placeholder'>Ma'lumotni yuklab bo'lmadi. Birozdan so'ng qayta urinib ko'ring.</div>"; });
+  }
+
+  function paintProfile(p){
+    const initials = (p.name || '?').slice(0,2).toUpperCase();
+    let matchHtml = `<div class="section-title">JORIY O'YIN</div><div class="placeholder" style="padding:24px 10px;">Hozircha faol o'yiningiz yo'q.</div>`;
+    if (p.current_match) {
+      const m = p.current_match;
+      matchHtml = `
+        <div class="section-title">JORIY O'YIN</div>
+        <div class="match-card">
+          <div class="vs"><b>Raqib: @${m.opponent_username}</b><span>#${m.match_id}</span></div>
+          <div class="score-row">
+            <input type="number" min="0" id="scoreMe" placeholder="Siz">
+            <span>:</span>
+            <input type="number" min="0" id="scoreOpp" placeholder="Raqib">
+          </div>
+          <button class="submit-btn" id="btnSubmitScore">✅ Natijani yuborish</button>
+          <button class="dispute-btn" id="btnDispute">🚨 Adminga murojaat</button>
+          <div id="matchStatus" style="text-align:center;color:var(--muted);font-size:12px;margin-top:8px;"></div>
+        </div>`;
+    }
+    app.innerHTML = `
+      <div class="profile-header">
+        <div class="profile-avatar">${initials}</div>
+        <div class="profile-info"><b>${p.name || 'Foydalanuvchi'}</b><span>@${p.username || '—'}</span></div>
+        <div class="profile-ball"><b>${p.ball ?? 0}</b><span>BALL</span></div>
+      </div>
+      <div class="section-title">STATISTIKA</div>
+      <div class="stat-grid4">
+        <div class="stat-box"><b>${p.win_pct ?? 0}%</b><span>G'ALABA FOIZI</span></div>
+        <div class="stat-box"><b>${p.wins ?? 0}</b><span>G'ALABA</span></div>
+        <div class="stat-box"><b>${p.draws ?? 0}</b><span>DURANG</span></div>
+        <div class="stat-box"><b>${p.losses ?? 0}</b><span>MAG'LUBIYAT</span></div>
+      </div>
+      ${matchHtml}
+      <div class="section-title">O'YIN TARIXI</div>
+      <div id="historyList"></div>`;
+    const list = document.getElementById('historyList');
+    (p.history || []).forEach(h => {
+      const row = document.createElement('div');
+      row.className = 'history-row';
+      const badgeClass = h.status === 'confirmed' ? 'ok' : (h.status === 'dispute' ? 'dispute' : 'pending');
+      const badgeText = h.status === 'confirmed' ? 'TASDIQLANDI' : (h.status === 'dispute' ? 'NIZOLI' : 'KUTILMOQDA');
+      row.innerHTML = `
+        <span class="h-id">#${h.match_id}</span>
+        <span class="h-opp">@${h.opponent_username}</span>
+        <span class="h-score">${h.my_score}:${h.opp_score}</span>
+        <span class="history-badge ${badgeClass}">${badgeText}</span>`;
+      list.appendChild(row);
+    });
+    if (!p.history || p.history.length === 0) {
+      list.innerHTML = `<div class="placeholder" style="padding:20px 10px;">Hali o'yin tarixi yo'q.</div>`;
+    }
+
+    const submitBtn = document.getElementById('btnSubmitScore');
+    if (submitBtn) {
+      submitBtn.onclick = () => {
+        haptic();
+        const me = document.getElementById('scoreMe').value;
+        const opp = document.getElementById('scoreOpp').value;
+        if (me === '' || opp === '') {
+          document.getElementById('matchStatus').textContent = "Ikkala hisobni ham kiriting.";
+          return;
+        }
+        fetch(`${API_BASE}/api/match/submit/${currentTelegramId()}`, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ match_id: p.current_match.match_id, my_score: Number(me), opp_score: Number(opp) })
+        })
+          .then(res => res.json())
+          .then(res => {
+            document.getElementById('matchStatus').textContent = res.message || "Yuborildi.";
+            if (res.success) renderProfile();
+          })
+          .catch(() => { document.getElementById('matchStatus').textContent = "Xatolik yuz berdi."; });
+      };
+    }
+    const disputeBtn = document.getElementById('btnDispute');
+    if (disputeBtn) {
+      disputeBtn.onclick = () => {
+        haptic();
+        fetch(`${API_BASE}/api/match/dispute/${currentTelegramId()}`, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ match_id: p.current_match.match_id })
+        })
+          .then(res => res.json())
+          .then(res => { document.getElementById('matchStatus').textContent = res.message || "Admin xabardor qilindi."; })
+          .catch(() => { document.getElementById('matchStatus').textContent = "Xatolik yuz berdi."; });
+      };
+    }
+  }
+
   function setActiveNav(tab){
     document.querySelectorAll('#bottomNav .nav-item').forEach(el => {
       el.classList.toggle('active', el.dataset.tab === tab);
@@ -758,7 +911,7 @@
         else renderHome();
       }
       else if (tab === 'rating') renderRating('reyting');
-      else if (tab === 'profile') renderPlaceholder('profile', '👤', 'Profil');
+      else if (tab === 'profile') renderProfile();
       else if (tab === 'prizes') renderPlaceholder('prizes', '🎁', 'Sovrinlar');
     });
   });
