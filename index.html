@@ -250,6 +250,89 @@
     text-align:center;color:var(--muted);padding:60px 20px;font-size:14px;line-height:1.6;
   }
   .placeholder .em-big{font-size:44px;display:block;margin-bottom:12px;}
+  .subtab-row{display:flex;gap:10px;margin-bottom:14px;}
+  .subtab-btn{
+    flex:1;padding:12px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.08);
+    background:var(--card);color:var(--muted);font-weight:700;font-size:13px;font-family:inherit;
+  }
+  .subtab-btn.active{background:linear-gradient(90deg,#6a5cff,var(--cyan));color:#001522;border-color:transparent;}
+  .rating-msg{
+    background:linear-gradient(160deg,#182338,#0c1426);border:1px solid rgba(0,217,255,.2);
+    border-radius:16px;padding:20px;text-align:center;font-size:14px;line-height:1.7;
+  }
+  .rating-msg b{color:var(--cyan);font-size:20px;}
+  .scorer-row{
+    display:flex;align-items:center;gap:12px;
+    background:var(--card);border:1px solid rgba(255,255,255,.06);
+    border-radius:12px;padding:12px 14px;margin-bottom:8px;
+  }
+  .scorer-rank{
+    width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:800;flex-shrink:0;background:#1c2740;color:var(--muted);
+  }
+  .scorer-rank.r1{background:linear-gradient(135deg,#ffd76a,#ffb800);color:#3a2600;}
+  .scorer-rank.r2{background:#c9d3e0;color:#1a2333;}
+  .scorer-rank.r3{background:#d99a5b;color:#2a1a08;}
+  .scorer-name{flex:1;font-size:14px;font-weight:700;}
+  .scorer-goals{color:var(--cyan);font-weight:800;font-size:15px;}
+  .live-badge{
+    background:#ff5f6d;color:#fff;font-size:9px;font-weight:800;letter-spacing:1px;
+    padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle;
+  }
+  .sub-tabs{display:flex;gap:10px;margin-bottom:16px;}
+  .sub-tab{
+    flex:1;padding:12px 8px;border-radius:22px;border:1px solid rgba(255,255,255,.1);
+    background:var(--card);color:var(--muted);font-weight:700;font-size:13px;font-family:inherit;
+  }
+  .sub-tab.active{background:linear-gradient(90deg,#6a5cff,#1fb5a0);color:#fff;border-color:transparent;}
+  .rating-card{
+    background:linear-gradient(160deg,#1a1650,#0c1426);border:1px solid rgba(106,92,255,.35);
+    border-radius:18px;padding:22px 18px;text-align:center;
+  }
+  .rating-label{color:var(--muted);font-size:13px;}
+  .big-num{font-size:64px;font-weight:800;color:var(--cyan);line-height:1.1;margin-top:8px;}
+  .rating-unit{color:var(--muted);font-size:12px;letter-spacing:2px;margin-bottom:14px;}
+  .rating-note{font-size:13px;line-height:1.6;margin-bottom:16px;}
+  .medal-row{
+    display:flex;align-items:center;gap:12px;background:var(--card);border-radius:12px;
+    padding:14px;margin-bottom:8px;border-left:4px solid #555;font-size:14px;
+  }
+  .medal-row.gold{border-left-color:#ffd54a;}
+  .medal-row.silver{border-left-color:#c0c7d1;}
+  .medal-row.bronze{border-left-color:#cd7f32;}
+  .medal-row.live{border-left-color:#00ffa3;}
+  .medal-row b{width:18px;}
+  .medal-row .mname{flex:1;font-weight:700;}
+  .medal-row .mgoals{color:var(--cyan);font-weight:800;font-size:16px;}
+  .empty-note{
+    color:var(--muted);font-size:12px;text-align:center;padding:14px;
+    background:var(--card);border-radius:12px;margin-bottom:8px;
+  }
+  .seg{display:flex;gap:10px;margin-bottom:16px;}
+  .seg-btn{
+    flex:1;padding:12px;border-radius:22px;border:1px solid rgba(255,255,255,.1);
+    background:var(--card);color:var(--muted);font-weight:700;font-size:13px;font-family:inherit;
+  }
+  .seg-btn.active{background:linear-gradient(90deg,#6a5cff,#1fb5a5);color:#fff;border-color:transparent;}
+  .info-card{
+    background:linear-gradient(160deg,#182338,#0c1426);border:1px solid rgba(0,217,255,.2);
+    border-radius:16px;padding:20px 16px;text-align:center;
+  }
+  .info-card .label{color:var(--muted);font-size:12px;letter-spacing:1px;}
+  .info-card .msg{font-size:18px;line-height:1.5;margin:14px 0;}
+  .info-card .msg b{color:var(--cyan);}
+  .info-card.good .msg{color:#00ffa3;}
+  .info-card.bad .msg{color:var(--gold);}
+  .progress{height:8px;border-radius:8px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:14px;}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,#6a5cff,var(--cyan));}
+  .scorer-row{
+    display:flex;align-items:center;gap:10px;background:var(--card);
+    border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 14px;margin-bottom:8px;font-size:14px;
+  }
+  .scorer-row .rank{width:28px;font-size:18px;text-align:center;}
+  .scorer-row .name{flex:1;font-weight:700;}
+  .scorer-row .goals{color:var(--cyan);font-weight:800;}
+  .scorer-row.live{border-color:rgba(255,95,109,.45);}
 </style>
 </head>
 <body>
@@ -566,6 +649,73 @@
     });
   }
 
+  const TOP_SCORERS_ALLTIME = [
+    ['Asd990730', 75], ['thecoko', 56], ['az1zbek_005_10', 51],
+  ];
+  const LIVE_LEADER = { name: 'Muhammadsodiq_004', goals: 9 };
+
+  function renderRating(subTab){
+    subTab = subTab || 'reyting';
+    setActiveNav('rating');
+    app.innerHTML = `
+      <div class="section-title">REYTING</div>
+      <div class="subtab-row">
+        <button class="subtab-btn ${subTab==='reyting'?'active':''}" id="subReyting">🏆 Reyting</button>
+        <button class="subtab-btn ${subTab==='goals'?'active':''}" id="subGoals">⚽ To'p urarlar</button>
+      </div>
+      <div id="ratingBody" style="text-align:center;color:var(--muted);padding:20px 0;">Yuklanmoqda...</div>`;
+    document.getElementById('subReyting').onclick = () => { haptic(); renderRating('reyting'); };
+    document.getElementById('subGoals').onclick = () => { haptic(); renderRating('goals'); };
+
+    if (subTab === 'goals') {
+      const body = document.getElementById('ratingBody');
+      body.style.textAlign = '';
+      body.style.padding = '';
+      body.innerHTML = `
+        <div class="section-title">JORIY LIDER (LIVE)</div>
+        <div class="scorer-row">
+          <div class="scorer-rank" style="background:#ff5f6d;color:#fff;">●</div>
+          <div class="scorer-name">${LIVE_LEADER.name}<span class="live-badge">LIVE</span></div>
+          <div class="scorer-goals">${LIVE_LEADER.goals} gol</div>
+        </div>
+        <div class="section-title">TARIXIY TOP GOL URARLAR</div>
+        <div id="scorerList"></div>`;
+      const list = document.getElementById('scorerList');
+      TOP_SCORERS_ALLTIME.forEach(([name, goals], i) => {
+        const row = document.createElement('div');
+        row.className = 'scorer-row';
+        row.innerHTML = `<div class="scorer-rank r${i+1}">${i+1}</div><div class="scorer-name">${name}</div><div class="scorer-goals">${goals} gol</div>`;
+        list.appendChild(row);
+      });
+      return;
+    }
+
+    const uid = currentTelegramId();
+    if (!uid) {
+      document.getElementById('ratingBody').textContent = "Foydalanuvchi aniqlanmadi — Telegram ichida oching.";
+      return;
+    }
+    fetch(`${API_BASE}/api/division/${uid}`)
+      .then(res => res.json())
+      .then(d => {
+        const r = divisionRules(d.division);
+        const remaining = 4 - d.matches_played_cycle;
+        const need = Math.max(r.promote - d.points_cycle, 0);
+        const body = document.getElementById('ratingBody');
+        body.style.textAlign = '';
+        body.style.padding = '';
+        body.innerHTML = `
+          <div class="rating-msg">
+            Joriy divizion: <b>${d.division}</b><br><br>
+            ${r.promoteLabel || 'Keyingi divizionga chiqish'} uchun sizga yana <b>${need}</b> ochko kerak
+            (${remaining} o'yin qoldi, hozirgi ochko: ${d.points_cycle}).
+          </div>`;
+      })
+      .catch(() => {
+        document.getElementById('ratingBody').textContent = "Ma'lumotni yuklab bo'lmadi. Birozdan so'ng qayta urinib ko'ring.";
+      });
+  }
+
   function setActiveNav(tab){
     document.querySelectorAll('#bottomNav .nav-item').forEach(el => {
       el.classList.toggle('active', el.dataset.tab === tab);
@@ -585,7 +735,7 @@
       window.scrollTo(0, 0);
       const tab = el.dataset.tab;
       if (tab === 'home') renderHome();
-      else if (tab === 'rating') renderPlaceholder('rating', '🏆', 'Reyting');
+      else if (tab === 'rating') renderRating('reyting');
       else if (tab === 'profile') renderPlaceholder('profile', '👤', 'Profil');
       else if (tab === 'prizes') renderPlaceholder('prizes', '🎁', 'Sovrinlar');
     });
